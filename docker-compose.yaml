@@ -26,9 +26,13 @@ services:
     environment:
       BOOTSTRAP_SERVER: kafka:29092
       CREATE_TOPICS: >-
-        connect.kafka_increasing_ids:3:1,
-        connect.kafka_updated_at:3:1,
-        connect.kafka_no_hints:3:1
+        connect.increasing_ids:3:1,
+        connect.updated_at:3:1,
+        connect.no_hints:3:1,
+        __debezium.dbhistory:3:1,
+        main.dbo.increasing_ids:3:1,
+        main.dbo.updated_at:3:1,
+        main.dbo.no_hints:3:1
     depends_on:
       - kafka
   mssql:
@@ -36,6 +40,7 @@ services:
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: Passw0rdOfs3cr3ts
+      MSSQL_AGENT_ENABLED: "true"
     ports:
       - 1433:1433
   mssql-tools:
@@ -64,6 +69,8 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+    volumes:
+      - ./debezium-connector-sqlserver/:/usr/share/java/debezium-connector-sqlserver/
     depends_on:
       - kafka
       - mssql-tools

@@ -12,7 +12,7 @@ from config import (
 
 def add_increasing_connector():
     connector_name = "SQL_INCREASING_ID_CONNECTOR"
-    table_name = "master.dbo.kafka_increasing_ids"
+    table_name = "kafka.dbo.increasing_ids"
 
     resp = requests.post(
         f"{KAFKA_CONNECT_URL}/connectors",
@@ -52,7 +52,7 @@ def add_increasing_connector():
 
 def add_updated_at_connector():
     connector_name = "SQL_UPDATED_AT_CONNECTOR"
-    table_name = "master.dbo.kafka_updated_at"
+    table_name = "kafka.dbo.updated_at"
 
     resp = requests.post(
         f"{KAFKA_CONNECT_URL}/connectors",
@@ -92,7 +92,7 @@ def add_updated_at_connector():
 
 def add_no_hints_connector():
     connector_name = "SQL_NO_HINTS_CONNECTOR"
-    table_name = "master.dbo.kafka_no_hints"
+    table_name = "kafka.dbo.no_hints"
 
     resp = requests.post(
         f"{KAFKA_CONNECT_URL}/connectors",
