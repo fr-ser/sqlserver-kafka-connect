@@ -31,7 +31,7 @@ def add_increasing_connector():
                 "connection.password": JDBC_CONNECTION_PASSWORD,
                 "table.whitelist": table_name,
                 "topic.prefix": "connect.",
-                "poll.interval.ms": "10000",
+                "poll.interval.ms": "1000",
                 # key generation
                 "transforms": "createKey,extractInt",
                 "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
@@ -71,7 +71,7 @@ def add_updated_at_connector():
                 "connection.password": JDBC_CONNECTION_PASSWORD,
                 "table.whitelist": table_name,
                 "topic.prefix": "connect.",
-                "poll.interval.ms": "10000",
+                "poll.interval.ms": "1000",
                 # key generation
                 "transforms": "createKey,extractInt",
                 "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
@@ -111,7 +111,7 @@ def add_no_hints_connector():
                 "connection.password": JDBC_CONNECTION_PASSWORD,
                 "table.whitelist": table_name,
                 "topic.prefix": "connect.",
-                "poll.interval.ms": "10000",
+                "poll.interval.ms": "1000",
                 # key generation
                 "transforms": "createKey,extractInt",
                 "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",

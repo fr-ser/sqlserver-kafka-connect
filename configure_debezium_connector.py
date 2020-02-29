@@ -13,7 +13,7 @@ from config import (
 
 def add_connector():
     connector_name = "DEBEZIUME_INCREASING_ID_CONNECTOR"
-    # table_name = "kafka.dbo.increasing_ids"
+    table_whitelist = r".*increasing_ids,.*updated_at,.*no_hints"
 
     resp = requests.post(
         f"{KAFKA_CONNECT_URL}/connectors",
@@ -30,7 +30,8 @@ def add_connector():
                 "database.password": JDBC_CONNECTION_PASSWORD,
                 "database.dbname": JDBC_CONNECTION_DATABSE,
                 "database.history.kafka.bootstrap.servers": KAFKA_SERVER,
-                "database.history.kafka.topic": "__debezium.dbhistory"
+                "database.history.kafka.topic": "__debezium.dbhistory",
+                "table.whitelist": table_whitelist,
             }
         }),
         timeout=10,
