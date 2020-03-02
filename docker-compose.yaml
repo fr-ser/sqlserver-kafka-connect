@@ -26,9 +26,6 @@ services:
     environment:
       BOOTSTRAP_SERVER: kafka:29092
       CREATE_TOPICS: >-
-        connect.increasing_ids:3:1,
-        connect.updated_at:3:1,
-        connect.no_hints:3:1,
         __debezium.dbhistory:3:1,
         main.dbo.increasing_ids:3:1,
         main.dbo.updated_at:3:1,
@@ -83,6 +80,14 @@ services:
     environment:
       PORT: "8084"
       PROXY: "true"
-      CONNECT_URL: "http://kafka-connect:8083"
+      CONNECT_URL: http://kafka-connect:8083
+    depends_on:
+      - kafka-connect
+  debezium:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    environment:
+      KAFKA_CONNECT_URL: http://kafka-connect:8083
     depends_on:
       - kafka-connect

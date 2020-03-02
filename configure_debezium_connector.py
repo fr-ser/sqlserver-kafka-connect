@@ -1,18 +1,22 @@
 """Configures a Kafka Connector for Postgres Station data"""
 
 import json
+import os
 
 import requests
 
-from config import (
-    KAFKA_CONNECT_URL, KAFKA_SERVER,
-    JDBC_CONNECTION_USER, JDBC_CONNECTION_PASSWORD, JDBC_CONNECTION_DATABSE,
-    JDBC_HOSTNAME, JDBC_PORT,
-)
+
+KAFKA_SERVER = os.environ.get("KAFKA_SERVER", "kafka:29092")
+KAFKA_CONNECT_URL = os.environ.get("KAFKA_CONNECT_URL", "http://localhost:8083")
+JDBC_HOSTNAME = os.environ.get("JDBC_HOSTNAME", "mssql")
+JDBC_PORT = os.environ.get("JDBC_PORT", "1433")
+JDBC_CONNECTION_DATABSE = os.environ.get("JDBC_CONNECTION_DATABSE", "kafka")
+JDBC_CONNECTION_USER = os.environ.get("JDBC_CONNECTION_USER", "SA")
+JDBC_CONNECTION_PASSWORD = os.environ.get("JDBC_CONNECTION_PASSWORD", "Passw0rdOfs3cr3ts")
 
 
 def add_connector():
-    connector_name = "DEBEZIUME_INCREASING_ID_CONNECTOR"
+    connector_name = "DEBEZIUM_CONNECTOR"
     table_whitelist = r".*increasing_ids,.*updated_at,.*no_hints"
 
     resp = requests.post(
