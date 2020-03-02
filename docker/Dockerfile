@@ -7,6 +7,7 @@ COPY Pipfile Pipfile.lock ./
 RUN pipenv install --system
 
 COPY configure_debezium_connector.py .
+COPY config.py .
 COPY ./docker/wait_for_kafka_connect.py .
 
 CMD python ./wait_for_kafka_connect.py && python ./configure_debezium_connector.py

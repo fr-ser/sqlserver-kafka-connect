@@ -27,9 +27,8 @@ services:
       BOOTSTRAP_SERVER: kafka:29092
       CREATE_TOPICS: >-
         __debezium.dbhistory:3:1,
-        main.dbo.increasing_ids:3:1,
-        main.dbo.updated_at:3:1,
-        main.dbo.no_hints:3:1
+        main.dbo.one:3:1,
+        main.dbo.two:3:1
     depends_on:
       - kafka
   mssql:
