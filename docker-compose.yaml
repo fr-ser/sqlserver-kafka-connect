@@ -7,6 +7,7 @@ services:
     hostname: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+
   kafka:
     image: confluentinc/cp-kafka
     depends_on:
@@ -21,16 +22,18 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+
   kafka-cli:
     image: frser/kafka-cli
     environment:
       BOOTSTRAP_SERVER: kafka:29092
       CREATE_TOPICS: >-
         __debezium.dbhistory:3:1,
-        main.dbo.one:3:1,
-        main.dbo.two:3:1
+        main.dbo.ship:3:1,
+        main.dbo.train:3:1
     depends_on:
       - kafka
+
   mssql:
     image: mcr.microsoft.com/mssql/server
     environment:
@@ -39,13 +42,16 @@ services:
       MSSQL_AGENT_ENABLED: "true"
     ports:
       - 1433:1433
+
   mssql-tools:
     image: mcr.microsoft.com/mssql-tools
-    command: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P Passw0rdOfs3cr3ts -i /data/0_seed.sql
+    command: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P Passw0rdOfs3cr3ts -i /seeds/sqlserver.sql
     volumes:
       - ./database_inserts/:/data/
+      - ./seeds/:/seeds/
     depends_on:
       - mssql
+
   kafka-connect:
     image: confluentinc/cp-kafka-connect:5.4.0
     ports:
@@ -72,6 +78,7 @@ services:
     depends_on:
       - kafka
       - mssql-tools
+
   kafka-connect-ui:
     image: landoop/kafka-connect-ui
     ports:
@@ -82,11 +89,34 @@ services:
       CONNECT_URL: http://kafka-connect:8083
     depends_on:
       - kafka-connect
+
   debezium:
     build:
-      context: .
-      dockerfile: ./docker/Dockerfile
+      context: ./
+      dockerfile: ./docker/DockerfileDebezium
     environment:
       KAFKA_CONNECT_URL: http://kafka-connect:8083
     depends_on:
       - kafka-connect
+
+  postgres:
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "SA"
+      POSTGRES_PASSWORD: "Passw0rdOfs3cr3ts"
+      POSTGRES_DB: "kafka"
+    volumes:
+      - ./seeds/postgres.sql:/docker-entrypoint-initdb.d/postgres.sql
+
+  faust:
+    build:
+      context: ./
+      dockerfile: ./docker/DockerfileFaust
+    environment:
+      POSTGRES_URI: "postgresql://SA:Passw0rdOfs3cr3ts@postgres:5432/kafka"
+      KAFKA_SERVER: "kafka:29092"
+    depends_on:
+      - postgres
+      - kafka

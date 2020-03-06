@@ -1,11 +1,12 @@
 import json
 
+from loguru import logger
 import requests
 
 from config import (
-    KAFKA_SERVER,
+    DEBEZIUM_KAFKA_SERVER,
     KAFKA_CONNECT_URL,
-    DB_DEBEZIUM_HOST,
+    DEBEZIUM_DB_HOST,
     DB_PORT,
     DB_NAME,
     DB_USER,
@@ -26,12 +27,12 @@ def add_connector(connector_name, table_whitelist, database=None, server_name=No
                 "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
                 "tasks.max": "1",
                 "database.server.name": server_name,
-                "database.hostname": DB_DEBEZIUM_HOST,
+                "database.hostname": DEBEZIUM_DB_HOST,
                 "database.port": DB_PORT,
                 "database.user": DB_USER,
                 "database.password": DB_PASSWORD,
                 "database.dbname": database,
-                "database.history.kafka.bootstrap.servers": KAFKA_SERVER,
+                "database.history.kafka.bootstrap.servers": DEBEZIUM_KAFKA_SERVER,
                 "database.history.kafka.topic": "__debezium.dbhistory",
                 "table.whitelist": table_whitelist,
             }
@@ -40,7 +41,7 @@ def add_connector(connector_name, table_whitelist, database=None, server_name=No
     )
 
     resp.raise_for_status()
-    print(f"Kafka Connect {connector_name} created successfully")
+    logger.info(f"Kafka Connect {connector_name} created successfully")
 
 
 def delete_connector(connector_name):
@@ -50,11 +51,11 @@ def delete_connector(connector_name):
     )
 
     resp.raise_for_status()
-    print(f"Kafka Connect {connector_name} deleted successfully")
+    logger.info(f"Kafka Connect {connector_name} deleted successfully")
 
 
 if __name__ == "__main__":
     connector_name = "DEBEZIUM_CONNECTOR"
-    table_whitelist = r"dbo[.]one,dbo[.]two"
+    table_whitelist = r"dbo[.]ship,dbo[.]train"
 
     add_connector(connector_name, table_whitelist)

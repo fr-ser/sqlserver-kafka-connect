@@ -4,9 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+confluent-kafka = "*"
+pyodbc = "*"
 
 [packages]
 requests = "*"
+faust = "*"
+loguru = "*"
+asyncpg = "*"
 
 [requires]
 python_version = "3.7"
