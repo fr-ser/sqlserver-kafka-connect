@@ -26,7 +26,11 @@ async def db_save(db_connection, payload):
         placeholders = ", ".join(f"${idx}" for idx in range(1, len(values)+1))
 
         await db_connection.execute(
-            f"INSERT INTO {table} ({columns_str}) VALUES ({placeholders})",
+            f"""
+            INSERT INTO {table} ({columns_str}) VALUES ({placeholders})
+            -- conflict handling due to possible duplicates during snapshot generation
+            ON CONFLICT DO NOTHING;
+            """,
             *values
         )
     elif payload["op"] == Operations.update:

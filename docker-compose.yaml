@@ -29,8 +29,8 @@ services:
       BOOTSTRAP_SERVER: kafka:29092
       CREATE_TOPICS: >-
         __debezium.dbhistory:3:1,
-        main.dbo.ship:3:1,
-        main.dbo.train:3:1
+        main.dbo.ship:1:1,
+        main.dbo.train:1:1
     depends_on:
       - kafka
 
@@ -77,7 +77,6 @@ services:
       - ./debezium-connector-sqlserver/:/usr/share/java/debezium-connector-sqlserver/
     depends_on:
       - kafka
-      - mssql-tools
 
   kafka-connect-ui:
     image: landoop/kafka-connect-ui
@@ -97,6 +96,7 @@ services:
     environment:
       KAFKA_CONNECT_URL: http://kafka-connect:8083
     depends_on:
+      - mssql-tools
       - kafka-connect
 
   postgres:

@@ -5,8 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
-confluent-kafka = "*"
 pyodbc = "*"
+psycopg2 = "*"
 
 [packages]
 requests = "*"
