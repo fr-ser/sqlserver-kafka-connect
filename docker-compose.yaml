@@ -8,31 +8,51 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
-  kafka:
+  kafka0: &broker-default
     image: confluentinc/cp-kafka
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
-    environment:
+    environment: &default-broker-env
+      KAFKA_BROKER_ID: 0
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://:9092"
-      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENERS: "INTERNAL://kafka0:29092,EXTERNAL://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka0:29092,EXTERNAL://localhost:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+  kafka1:
+    <<: *broker-default
+    ports:
+      - "9093:9093"
+    environment:
+      <<: *default-broker-env
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: "INTERNAL://kafka1:29093,EXTERNAL://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka1:29093,EXTERNAL://localhost:9093"
+  kafka2:
+    <<: *broker-default
+    ports:
+      - "9094:9094"
+    environment:
+      <<: *default-broker-env
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTENERS: "INTERNAL://kafka2:29094,EXTERNAL://:9094"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka2:29094,EXTERNAL://localhost:9094"
 
   kafka-cli:
     image: frser/kafka-cli
     environment:
-      BOOTSTRAP_SERVER: kafka:29092
+      BOOTSTRAP_SERVER: kafka0:29092
       CREATE_TOPICS: >-
-        __debezium.dbhistory:3:1,
-        main.dbo.ship:1:1,
-        main.dbo.train:1:1
+        __debezium.dbhistory:3:3,
+        main.dbo.ship:1:3,
+        main.dbo.train:1:3
     depends_on:
-      - kafka
+      - kafka0
+      - kafka1
+      - kafka2
 
   mssql:
     image: mcr.microsoft.com/mssql/server
@@ -57,7 +77,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:29092"
+      CONNECT_BOOTSTRAP_SERVERS: "kafka0:29092,kafka1:29093,kafka2:29094"
       CONNECT_GROUP_ID: connect
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECT_PLUGIN_PATH: "/usr/share/java"
@@ -70,13 +90,10 @@ services:
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-config"
       CONNECT_OFFSET_STORAGE_TOPIC: "connect-offset"
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
     volumes:
       - ./debezium-connector-sqlserver/:/usr/share/java/debezium-connector-sqlserver/
     depends_on:
-      - kafka
+      - kafka0
 
   kafka-connect-ui:
     image: landoop/kafka-connect-ui
@@ -116,7 +133,7 @@ services:
       dockerfile: ./docker/DockerfileFaust
     environment:
       POSTGRES_URI: "postgresql://SA:Passw0rdOfs3cr3ts@postgres:5432/kafka"
-      KAFKA_SERVER: "kafka:29092"
+      KAFKA_SERVER: "kafka0:29092,kafka1:29093,kafka2:29094"
     depends_on:
       - postgres
-      - kafka
+      - kafka0
