@@ -54,7 +54,7 @@ services:
       - kafka1
       - kafka2
 
-  mssql:
+  sqlserver:
     image: mcr.microsoft.com/mssql/server
     environment:
       ACCEPT_EULA: Y
@@ -63,26 +63,24 @@ services:
     ports:
       - 1433:1433
 
-  mssql-tools:
+  sqlserver-cli:
     image: mcr.microsoft.com/mssql-tools
-    command: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P Passw0rdOfs3cr3ts -i /seeds/sqlserver.sql
+    command: /opt/mssql-tools/bin/sqlcmd -S sqlserver -U SA -P Passw0rdOfs3cr3ts -i /seeds/sqlserver.sql
     volumes:
       - ./database_inserts/:/data/
       - ./seeds/:/seeds/
     depends_on:
-      - mssql
+      - sqlserver
 
-  kafka-connect:
+  kafka-connect: &connect-default
     image: confluentinc/cp-kafka-connect:5.4.0
     ports:
       - "8083:8083"
-    environment:
+    environment: &default-connect-env
       CONNECT_BOOTSTRAP_SERVERS: "kafka0:29092,kafka1:29093,kafka2:29094"
       CONNECT_GROUP_ID: connect
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECT_PLUGIN_PATH: "/usr/share/java"
-      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
@@ -92,6 +90,18 @@ services:
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
     volumes:
       - ./debezium-connector-sqlserver/:/usr/share/java/debezium-connector-sqlserver/
+    depends_on:
+      - kafka0
+      - kafka-connect-1
+  kafka-connect-1:
+    <<: *connect-default
+    ports:
+      - "8085:8085"
+    environment:
+      <<: *default-connect-env
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect-1
+      CONNECT_REST_ADVERTISED_PORT: "8085"
+      CONNECT_REST_PORT: "8085"
     depends_on:
       - kafka0
 
@@ -113,7 +123,7 @@ services:
     environment:
       KAFKA_CONNECT_URL: http://kafka-connect:8083
     depends_on:
-      - mssql-tools
+      - sqlserver-cli
       - kafka-connect
 
   postgres:

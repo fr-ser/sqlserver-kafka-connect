@@ -5,7 +5,7 @@ import re
 KAFKA_SERVER = os.environ.get("KAFKA_SERVER", "localhost:9092")
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 KAFKA_CONNECT_URL = os.environ.get("KAFKA_CONNECT_URL", "http://localhost:8083")
-DEBEZIUM_DB_HOST = os.environ.get("DEBEZIUM_DB_HOST", "mssql")
+DEBEZIUM_DB_HOST = os.environ.get("DEBEZIUM_DB_HOST", "sqlserver")
 DEBEZIUM_KAFKA_SERVER = os.environ.get(
     "DEBEZIUM_KAFKA_SERVER", "kafka0:29092,kafka1:29093,kafka2:29094",
 )
