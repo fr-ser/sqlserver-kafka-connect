@@ -25,9 +25,8 @@ def add_connector(connector_name, table_whitelist, database=None, server_name=No
             "name": connector_name,
             "config": {
                 "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
-                "tasks.max": "1",
                 # the isolation mode seems to have no effect...
-                # "snapshot.isolation.mode": "exclusive",
+                "snapshot.isolation.mode": "exclusive",
                 "database.server.name": server_name,
                 "database.hostname": DEBEZIUM_DB_HOST,
                 "database.port": DB_PORT,

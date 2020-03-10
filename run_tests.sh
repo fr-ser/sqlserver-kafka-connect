@@ -2,7 +2,8 @@
 
 set -e
 
-if [ "$1" == "--bootstrap" ]; then
+
+if [ "${BOOTSTRAP}" == "true" ]; then
     ./bootstrap.sh
 fi
 

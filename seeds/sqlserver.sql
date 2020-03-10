@@ -9,7 +9,7 @@ CREATE TABLE kafka.dbo.ship (
   , port VARCHAR(max) NOT NULL
 );
 EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'ship',
-  @role_name = NULL, @supports_net_changes = 0, @capture_instance = 'v1-ship';
+  @role_name = NULL, @capture_instance = 'v1-ship';
 
 CREATE TABLE kafka.dbo.train (
     wagon_number int IDENTITY(1, 1) PRIMARY KEY
@@ -17,6 +17,6 @@ CREATE TABLE kafka.dbo.train (
   , station VARCHAR(max) NOT NULL
 );
 EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'train',
-  @role_name = NULL, @supports_net_changes = 0, @capture_instance = 'v1-train';
+  @role_name = NULL, @capture_instance = 'v1-train';
 
 GO

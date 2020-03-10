@@ -1,3 +1,24 @@
+## Startup
+
+### Requirements
+
+- python3
+- pipenv
+- docker and docker-compose
+- bash (probably whole linux environment)
+
+### Startup
+
+To start the full (3 kafka brokers 2 kafka connect) environment: `./bootstrap.sh`
+
+To start a slim (1 kafka broker 1 kafka connect) environment: `SLIM=true ./bootstrap.sh`
+
+### Tests
+
+To run the tests: `./run_tests.sh`
+
+To start the environment and run the tests: `BOOTSTRAP=true ./run_tests.sh`
+
 ## Schema changes
 
 see https://debezium.io/documentation/reference/1.0/connectors/sqlserver.html#schema-evolution

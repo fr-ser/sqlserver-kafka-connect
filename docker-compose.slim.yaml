@@ -1,0 +1,122 @@
+version: "3"
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    ports:
+      - "2181:2181"
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka0:
+    image: confluentinc/cp-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: "INTERNAL://kafka0:29092,EXTERNAL://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka0:29092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+
+  kafka-cli:
+    image: frser/kafka-cli
+    environment:
+      BOOTSTRAP_SERVER: kafka0:29092
+      CREATE_TOPICS: >-
+        __debezium.dbhistory:3:1,
+        main.dbo.ship:1:1,
+        main.dbo.train:1:1
+    depends_on:
+      - kafka0
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Passw0rdOfs3cr3ts
+      MSSQL_AGENT_ENABLED: "true"
+    ports:
+      - 1433:1433
+
+  sqlserver-cli:
+    image: mcr.microsoft.com/mssql-tools
+    command: /opt/mssql-tools/bin/sqlcmd -S sqlserver -U SA -P Passw0rdOfs3cr3ts -i /seeds/sqlserver.sql
+    volumes:
+      - ./database_inserts/:/data/
+      - ./seeds/:/seeds/
+    depends_on:
+      - sqlserver
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:5.4.0
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka0:29092"
+      CONNECT_GROUP_ID: connect
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_PLUGIN_PATH: "/usr/share/java"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-config"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offset"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+    volumes:
+      - ./debezium-connector-sqlserver/:/usr/share/java/debezium-connector-sqlserver/
+    depends_on:
+      - kafka0
+
+  kafka-connect-ui:
+    image: landoop/kafka-connect-ui
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: "8084"
+      PROXY: "true"
+      CONNECT_URL: http://kafka-connect:8083
+    depends_on:
+      - kafka-connect
+
+  debezium:
+    build:
+      context: ./
+      dockerfile: ./docker/DockerfileDebezium
+    environment:
+      KAFKA_CONNECT_URL: http://kafka-connect:8083
+      DEBEZIUM_KAFKA_SERVER: kafka0:29092
+    depends_on:
+      - sqlserver-cli
+      - kafka-connect
+
+  postgres:
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "SA"
+      POSTGRES_PASSWORD: "Passw0rdOfs3cr3ts"
+      POSTGRES_DB: "kafka"
+    volumes:
+      - ./seeds/postgres.sql:/docker-entrypoint-initdb.d/postgres.sql
+
+  faust:
+    build:
+      context: ./
+      dockerfile: ./docker/DockerfileFaust
+    environment:
+      POSTGRES_URI: "postgresql://SA:Passw0rdOfs3cr3ts@postgres:5432/kafka"
+      KAFKA_SERVER: "kafka0:29092"
+    depends_on:
+      - postgres
+      - kafka0
