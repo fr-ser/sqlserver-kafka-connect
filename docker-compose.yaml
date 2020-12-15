@@ -9,7 +9,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
 
   kafka0: &broker-default
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:6.0.0
     depends_on:
       - zookeeper
     ports:
@@ -42,22 +42,22 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka2:29094,EXTERNAL://localhost:9094"
 
   kafka-cli:
-    image: frser/kafka-cli
+    image: frser/kafka-cli:2.6.0
     environment:
       BOOTSTRAP_SERVER: kafka0:29092
       CREATE_TOPICS: >-
         __debezium.dbhistory:3:3,
         main.dbo.ship:1:3,
-        main.dbo.train:1:3
+        main.dbo.train:1:3,
     depends_on:
       - kafka0
       - kafka1
       - kafka2
 
   sqlserver:
-    image: mcr.microsoft.com/mssql/server
+    image: mcr.microsoft.com/mssql/server:2019-CU8-ubuntu-16.04
     environment:
-      ACCEPT_EULA: Y
+      ACCEPT_EULA: "Y"
       SA_PASSWORD: Passw0rdOfs3cr3ts
       MSSQL_AGENT_ENABLED: "true"
     ports:
@@ -73,7 +73,7 @@ services:
       - sqlserver
 
   kafka-connect: &connect-default
-    image: confluentinc/cp-kafka-connect:5.4.0
+    image: confluentinc/cp-kafka-connect:6.0.0
     ports:
       - "8083:8083"
     environment: &default-connect-env

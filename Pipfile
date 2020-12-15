@@ -10,7 +10,7 @@ psycopg2 = "*"
 
 [packages]
 requests = "*"
-faust = "*"
+faust-streaming = "*"
 loguru = "*"
 asyncpg = "*"
 
