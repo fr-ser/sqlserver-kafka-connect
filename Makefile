@@ -1,26 +1,35 @@
 install:
 	pipenv install --python 3.7.9 --dev
 
-
 bootstrap-slim:
-	docker-compose --file docker-compose.slim.yaml  down --remove-orphans --volumes --timeout=5
-	docker-compose --file docker-compose.slim.yaml build
-	docker-compose --file docker-compose.slim.yaml up -d sqlserver postgres
-	docker-compose --file docker-compose.slim.yaml run kafka-cli
-	docker-compose --file docker-compose.slim.yaml up -d kafka-connect
-	docker-compose --file docker-compose.slim.yaml run sqlserver-cli
-	docker-compose --file docker-compose.slim.yaml up -d faust
-	docker-compose --file docker-compose.slim.yaml run debezium
+	docker-compose --file docker-compose.slim.yaml down --remove-orphans --volumes --timeout=5 > /dev/null
+	docker-compose --file docker-compose.slim.yaml build > /dev/null
+
+	docker-compose --file docker-compose.slim.yaml up -d sqlserver postgres > /dev/null
+	docker-compose --file docker-compose.slim.yaml run --rm kafka-cli > /dev/null
+	docker-compose --file docker-compose.slim.yaml up -d kafka-connect faust > /dev/null
+	docker-compose --file docker-compose.slim.yaml run --rm wait-for-db > /dev/null
+	docker-compose --file docker-compose.slim.yaml run --rm sqlserver-cli
+
+	SLEEP_LENGTH=5 ./deploy_connector.sh
 
 bootstrap:
-	docker-compose down --remove-orphans --volumes --timeout=5
-	docker-compose build
-	docker-compose up -d sqlserver postgres
-	docker-compose run kafka-cli
-	docker-compose up -d kafka-connect
-	docker-compose run sqlserver-cli
-	docker-compose up -d faust
-	docker-compose run debezium
+	docker-compose down --remove-orphans --volumes --timeout=5 > /dev/null
+	docker-compose build > /dev/null
+
+	docker-compose up -d sqlserver postgres > /dev/null
+	docker-compose run --rm kafka-cli > /dev/null
+	docker-compose up -d kafka-connect faust > /dev/null
+	docker-compose run --rm wait-for-db > /dev/null
+	docker-compose run --rm sqlserver-cli
+
+	SLEEP_LENGTH=5 ./deploy_connector.sh
+
+connector-install:
+	./deploy_connector.sh
+
+connector-delete:
+	curl --silent -X DELETE http://localhost:8083/connectors/DEBEZIUM_CONNECTOR/ | jq .
 
 test-no-bootstrap:
 	PYTHONPATH=./src pipenv run pytest tests

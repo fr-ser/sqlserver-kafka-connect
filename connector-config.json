@@ -1,0 +1,16 @@
+{
+  "name": "DEBEZIUM_CONNECTOR",
+  "config": {
+    "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
+    "snapshot.isolation.mode": "exclusive",
+    "database.server.name": "main",
+    "database.hostname": "sqlserver",
+    "database.port": "1433",
+    "database.user": "SA",
+    "database.password": "Passw0rdOfs3cr3ts",
+    "database.dbname": "kafka",
+    "database.history.kafka.bootstrap.servers": "kafka0:29092",
+    "database.history.kafka.topic": "__debezium.dbhistory",
+    "table.whitelist": "dbo[.]ship,dbo[.]train"
+  }
+}
