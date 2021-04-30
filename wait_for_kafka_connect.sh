@@ -14,5 +14,3 @@ while ! curl --fail --silent --output /dev/null localhost:8083/connector-plugins
     echo "waiting for KafkaConnect to start"
     sleep $SLEEP_LENGTH
 done
-
-curl --silent -X POST -H "Content-Type: application/json" -d @connector-config.json http://localhost:8083/connectors/ | jq .

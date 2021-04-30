@@ -2,8 +2,6 @@ version: "3"
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:6.0.0
-    ports:
-      - "2181:2181"
     hostname: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -75,20 +73,15 @@ services:
 
   kafka-connect: &connect-default
     build:
-      context: ./docker
-      dockerfile: ./DockerfileKafkaConnect
+      context: .
     ports:
       - "8083:8083"
-    environment: &default-connect-env
-      # CONNECT_LOG4J_LOGGERS: org.apache.kafka.connect=DEBUG
+    environment: &default-connect-env # CONNECT_LOG4J_LOGGERS: org.apache.kafka.connect=DEBUG
       CONNECT_BOOTSTRAP_SERVERS: "kafka0:29092,kafka1:29093,kafka2:29094"
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECT_GROUP_ID: connect
-      CONNECT_PLUGIN_PATH: "/usr/share/confluent-hub-components"
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-config"
       CONNECT_OFFSET_STORAGE_TOPIC: "connect-offset"
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
@@ -124,14 +117,3 @@ services:
       - postgres
       - sqlserver
     command: postgres:5432 sqlserver:1433
-
-  faust:
-    build:
-      context: ./
-      dockerfile: ./docker/DockerfileFaust
-    environment:
-      POSTGRES_URI: "postgresql://SA:Passw0rdOfs3cr3ts@postgres:5432/kafka"
-      KAFKA_SERVER: "kafka0:29092,kafka1:29093,kafka2:29094"
-    depends_on:
-      - postgres
-      - kafka0

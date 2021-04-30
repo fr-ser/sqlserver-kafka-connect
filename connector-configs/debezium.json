@@ -1,5 +1,5 @@
 {
-  "name": "DEBEZIUM_CONNECTOR",
+  "name": "debezium-source",
   "config": {
     "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
     "snapshot.isolation.mode": "exclusive",
@@ -11,6 +11,7 @@
     "database.dbname": "kafka",
     "database.history.kafka.bootstrap.servers": "kafka0:29092",
     "database.history.kafka.topic": "__debezium.dbhistory",
-    "table.whitelist": "dbo[.]ship,dbo[.]train"
+    "table.include.list": "dbo[.]ship,dbo[.]train",
+    "tombstones.on.delete": "true"
   }
 }

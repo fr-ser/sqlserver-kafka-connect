@@ -1,0 +1,20 @@
+{
+  "name": "jdbc-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "2",
+    "topics.regex": "main\\.dbo\\..+",
+    "insert.mode": "upsert",
+    "delete.enabled": "true",
+    "pk.mode": "record_key",
+    "value.converter.schemas.enable": "false",
+    "key.converter.schemas.enable": "false",
+    "connection.url": "jdbc:postgresql://postgres:5432/kafka?user=SA&password=Passw0rdOfs3cr3ts",
+    "transforms": "dropPrefix,unwrap",
+    "transforms.dropPrefix.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.dropPrefix.regex": "main\\.dbo\\.(.*)$",
+    "transforms.dropPrefix.replacement": "$1",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false"
+  }
+}
